@@ -305,9 +305,18 @@ public class Response implements Closeable {
 
     private void sendBodyWithCorrectEncoding(OutputStream outputStream, long pending) throws IOException {
         if (useGzipWhenAccepted()) {
-            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(outputStream);
-            sendBody(gzipOutputStream, -1);
-            gzipOutputStream.finish();
+            GZIPOutputStream gzipOutputStream = null;
+            try {
+                gzipOutputStream = new GZIPOutputStream(outputStream);
+            } catch (Exception e) {
+                if(this.data != null) {
+                    this.data.close();
+                }
+            }
+            if(gzipOutputStream) {
+                sendBody(gzipOutputStream, -1);
+                gzipOutputStream.finish();
+            }
         } else {
             sendBody(outputStream, pending);
         }
